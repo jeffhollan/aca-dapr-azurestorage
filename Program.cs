@@ -29,7 +29,7 @@ app.MapGet("/{key}", async (string key) =>
 
 app.MapPost("/", async (string req) =>
 {
-    return await client.PostAsJsonAsync(req);
+    return await client.PostAsJsonAsync(stateUrl, req);
 })
 .WithName("SetState");
 
