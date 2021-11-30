@@ -27,9 +27,9 @@ app.MapGet("/{key}", async (string key) =>
 })
 .WithName("GetState");
 
-app.MapPost("/", async (string req) =>
+app.MapPost("/", async (HttpRequest req) =>
 {
-    return await client.PostAsJsonAsync(stateUrl, req);
+    return await client.PostAsJsonAsync(stateUrl, req.Body);
 })
 .WithName("SetState");
 
