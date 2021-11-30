@@ -18,18 +18,22 @@ app.UseHttpsRedirection();
 
 var daprPort = Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500";
 var stateStoreName = "statestore";
-var stateUrl = $"http://localhost:${daprPort}/v1.0/state/${stateStoreName}";
+var stateUrl = $"http://localhost:{daprPort}/v1.0/state/{stateStoreName}";
 var client = new HttpClient();
 
 app.MapGet("/{key}", async (string key) =>
 {
-    return await client.GetAsync(stateUrl + "/" + key);
+    Console.WriteLine("Request key: " + key);
+    var res = await client.GetAsync(stateUrl + "/" + key);
+    return res.Content.ReadAsStringAsync();
 })
 .WithName("GetState");
 
 app.MapPost("/", async (HttpRequest req) =>
 {
-    return await client.PostAsJsonAsync(stateUrl, req.Body);
+    Console.WriteLine("Request body: " + await new StreamReader(req.Body).ReadToEndAsync());
+    var res = await client.PostAsJsonAsync(stateUrl, req.Body);
+    return res.Content.ReadAsStringAsync();
 })
 .WithName("SetState");
 
