@@ -1,0 +1,10 @@
+- name: statestore
+  type: state.azure.blobstorage
+  version: v1
+  metadata:
+    - name: accountName
+      value: "stcontainerappsdemo"
+    - name: accountKey
+      secretRef: storage-account-key
+    - name: containerName
+      value: "statecontainer"
