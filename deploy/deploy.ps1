@@ -7,6 +7,9 @@ $LOG_ANALYTICS_WORKSPACE = "aca-logs"
 $CONTAINERAPPS_ENVIRONMENT = "aca-env"
 $STORAGE_ACCOUNT = "daprstor$(Get-Random -Minimum 100 -Maximum 1000)"
 
+# replace dapr-components account name with the storage account you are going to create
+((Get-Content -path .\dapr-components.yaml -Raw) -replace 'stcontainerappsdemo', $STORAGE_ACCOUNT) | Set-Content -Path .\dapr-components.yaml
+
 az group create `
   --name $RESOURCE_GROUP `
   --location "$LOCATION"
