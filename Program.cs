@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,14 +17,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 var daprPort = Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500";
 var stateStoreName = "statestore";
 var stateUrl = $"http://localhost:{daprPort}/v1.0/state/{stateStoreName}";
 var client = new HttpClient();
 
-app.MapGet("/{key}", async (string key) =>
+app.MapGet("/state/{key}", async (string key) =>
 {
     Console.WriteLine("Request key: " + key);
     var res = await client.GetAsync(stateUrl + "/" + key);
@@ -29,11 +30,15 @@ app.MapGet("/{key}", async (string key) =>
 })
 .WithName("GetState");
 
-app.MapPost("/", async (HttpRequest req) =>
+app.MapPost("/state", async (HttpContext context) =>
 {
-    Console.WriteLine("Request body: " + await new StreamReader(req.Body).ReadToEndAsync());
-    var res = await client.PostAsJsonAsync(stateUrl, req.Body);
-    return res.Content.ReadAsStringAsync();
+    var body = await JsonSerializer.DeserializeAsync<dynamic>(context.Request.Body);
+    Console.WriteLine("Request body: " + body);
+    using MemoryStream memoryStream = new();
+    await JsonSerializer.SerializeAsync<dynamic>(memoryStream, body);
+    var res = await client.PostAsync(stateUrl, new StringContent(Encoding.UTF8.GetString(memoryStream.ToArray()), Encoding.UTF8, "application/json"));
+    await memoryStream.DisposeAsync();
+    return res.StatusCode;
 })
 .WithName("SetState");
 
